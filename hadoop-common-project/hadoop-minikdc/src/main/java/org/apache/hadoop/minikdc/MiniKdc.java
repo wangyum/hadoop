@@ -30,6 +30,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -331,6 +332,16 @@ public class MiniKdc {
       simpleKdc.getKdcConfig().setLong(KdcConfigKey.MAXIMUM_TICKET_LIFETIME,
           Long.parseLong(conf.getProperty(MiniKdc.MAX_TICKET_LIFETIME)));
     }
+
+    // refresh the config
+    Class<?> classRef;
+    if (System.getProperty("java.vendor").contains("IBM")) {
+      classRef = Class.forName("com.ibm.security.krb5.internal.Config");
+    } else {
+      classRef = Class.forName("sun.security.krb5.Config");
+    }
+    Method refreshMethod = classRef.getMethod("refresh", new Class[0]);
+    refreshMethod.invoke(classRef, new Object[0]);
   }
 
   /**
